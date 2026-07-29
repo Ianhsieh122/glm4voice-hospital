@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opus Hospital - AI 智能櫃台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .voice-interface {
+            text-align: center;
+        }
+
+        .voice-button {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            margin: 20px auto;
+            display: block;
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .voice-button:active {
+            transform: scale(0.95);
+        }
+
+        .voice-button.recording {
+            animation: pulse 1.5s infinite;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: white;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status.idle {
+            color: #6c757d;
+        }
+
+        .status.listening {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.speaking {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .chat-history {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .chat-message.user {
+            background: #e3f2fd;
+            color: #1976d2;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .chat-message.assistant {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .language-selector {
+            margin: 20px 0;
+        }
+
+        .language-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+        }
+
+        .appointment-form {
+            display: none;
+        }
+
+        .appointment-form.show {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .appointment-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .appointment-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .appointment-card h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .appointment-card p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .appointment-card .actions {
+            margin-top: 10px;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+        }
+
+        .connection-status.connected {
+            border-left: 4px solid #28a745;
+        }
+
+        .connection-status.disconnected {
+            border-left: 4px solid #dc3545;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: none;
+            background: #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status disconnected" id="connectionStatus">
+        ⚫ 未連線
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Opus Hospital</h1>
+            <p>AI 智能櫃台系統 - 支援繁體中文、台語、英語</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 左側：語音對話界面 -->
+            <div class="panel">
+                <h2>🎤 語音對話</h2>
+                
+                <div class="voice-interface">
+                    <button class="voice-button" id="voiceButton" title="點擊開始說話">
+                        🎙️
+                    </button>
+                    
+                    <div class="status idle" id="status">
+                        等待中...
+                    </div>
+
+                    <div class="language-selector">
+                        <label>選擇語言：</label>
+                        <select id="languageSelect">
+                            <option value="zh-tw">繁體中文（台灣國語）</option>
+                            <option value="nan">台語/閩南語 (Taiwanese Hokkien)</option>
+                            <option value="en">English (英語)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="chat-history" id="chatHistory">
+                    <div class="chat-message assistant">
+                        您好！我是 Opus Hospital 的 AI 語音助理小慧。<br>
+                        我可以協助您：<br>
+                        • 掛號<br>
+                        • 查詢門診時間<br>
+                        • 更改或取消掛號<br>
+                        • 更新病患資料<br>
+                        請問有什麼可以幫您的嗎？
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右側：掛號管理 -->
+            <div class="panel">
+                <h2>📋 掛號管理</h2>
+
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('create')">新增掛號</button>
+                    <button class="tab" onclick="switchTab('list')">掛號列表</button>
+                </div>
+
+                <!-- 新增掛號表單 -->
+                <div class="tab-content active" id="createTab">
+                    <form id="appointmentForm" onsubmit="createAppointment(event)">
+                        <div class="form-group">
+                            <label>病患姓名 *</label>
+                            <input type="text" id="patientName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>出生日期（民國）*</label>
+                            <input type="text" id="birthDate" placeholder="例如：80/05/15" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>身分證號</label>
+                            <input type="text" id="idNumber" placeholder="選填">
+                        </div>
+
+                        <div class="form-group">
+                            <label>電話 *</label>
+                            <input type="tel" id="phone" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>科別 *</label>
+                            <select id="department" required>
+                                <option value="">請選擇</option>
+                                <option value="內科">內科</option>
+                                <option value="外科">外科</option>
+                                <option value="小兒科">小兒科</option>
+                                <option value="婦產科">婦產科</option>
+                                <option value="骨科">骨科</option>
+                                <option value="皮膚科">皮膚科</option>
+                                <option value="眼科">眼科</option>
+                                <option value="耳鼻喉科">耳鼻喉科</option>
+                                <option value="牙科">牙科</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>醫師</label>
+                            <select id="doctor">
+                                <option value="王醫師">王醫師</option>
+                                <option value="李醫師">李醫師</option>
+                                <option value="張醫師">張醫師</option>
+                                <option value="陳醫師">陳醫師</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>掛號日期 *</label>
+                            <input type="date" id="appointmentDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>掛號時間 *</label>
+                            <select id="appointmentTime" required>
+                                <option value="">請選擇</option>
+                                <option value="09:00">上午 09:00</option>
+                                <option value="09:30">上午 09:30</option>
+                                <option value="10:00">上午 10:00</option>
+                                <option value="10:30">上午 10:30</option>
+                                <option value="11:00">上午 11:00</option>
+                                <option value="14:00">下午 14:00</option>
+                                <option value="14:30">下午 14:30</option>
+                                <option value="15:00">下午 15:00</option>
+                                <option value="15:30">下午 15:30</option>
+                                <option value="16:00">下午 16:00</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>備註</label>
+                            <textarea id="notes" rows="3" placeholder="選填"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            ✅ 確認掛號
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 掛號列表 -->
+                <div class="tab-content" id="listTab">
+                    <div class="appointment-list" id="appointmentList">
+                        <p style="text-align: center; color: #999; padding: 20px;">
+                            尚無掛號記錄
+                        </p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadAppointments()">
+                        🔄 重新整理
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let ws = null;
+        let sessionId = generateUUID();
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let currentLanguage = 'zh-tw';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            connectWebSocket();
+            loadAppointments();
+            
+            // Language selector
+            document.getElementById('languageSelect').addEventListener('change', (e) => {
+                currentLanguage = e.target.value;
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'config',
+                        language: currentLanguage,
+                        timestamp: Date.now()
+                    }));
+                }
+            });
+        });
+
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.hostname}:8000/ws/conversation`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                updateConnectionStatus(true);
+                updateStatus('已連線，準備就緒', 'idle');
+                
+                // Send initial config
+                ws.send(JSON.stringify({
+                    type: 'config',
+                    language: currentLanguage,
+                    timestamp: Date.now()
+                }));
+            };
+            
+            ws.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+                
+                switch(data.type) {
+                    case 'status':
+                        if (data.message === 'listening') updateStatus('🎤 聽取中...', 'listening');
+                        else if (data.message === 'interrupted') updateStatus('處理中...', 'processing');
+                        break;
+                        
+                    case 'transcript':
+                        addChatMessage('user', data.text);
+                        updateStatus('處理中...', 'processing');
+                        break;
+                    
+                    case 'response_text':
+                        addChatMessage('assistant', data.text);
+                        updateStatus('回應中...', 'speaking');
+                        break;
+                        
+                    case 'response_text_start':
+                        currentAssistantMessageDiv = addChatMessage('assistant', '');
+                        updateStatus('思考與回應中...', 'speaking');
+                        break;
+                        
+                    case 'response_text_chunk':
+                        if (currentAssistantMessageDiv) {
+                            currentAssistantMessageDiv.textContent += data.text;
+                            const chatHistory = document.getElementById('chatHistory');
+                            chatHistory.scrollTop = chatHistory.scrollHeight;
+                        }
+                        break;
+                    
+                    case 'response_audio':
+                        // Play audio response
+                        playAudio(data.data);
+                        break;
+                    
+                    case 'response_complete':
+                        updateStatus('完成，等待中...', 'idle');
+                        break;
+                    
+                    case 'error':
+                        updateStatus('錯誤：' + data.message, 'idle');
+                        break;
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus(false);
+            };
+            
+            ws.onclose = () => {
+                updateConnectionStatus(false);
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+
+        let audioContext = null;
+        let scriptProcessor = null;
+        let mediaStream = null;
+
+        async function toggleRecording() {
+            const button = document.getElementById('voiceButton');
+            
+            if (!isRecording) {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaStream = stream;
+                    
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+                    const source = audioContext.createMediaStreamSource(stream);
+                    
+                    // 4096 samples = ~256ms at 16kHz
+                    scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+                    
+                    source.connect(scriptProcessor);
+                    scriptProcessor.connect(audioContext.destination);
+                    
+                    scriptProcessor.onaudioprocess = (e) => {
+                        const inputData = e.inputBuffer.getChannelData(0);
+                        const pcm16 = new Int16Array(inputData.length);
+                        for (let i = 0; i < inputData.length; i++) {
+                            let s = Math.max(-1, Math.min(1, inputData[i]));
+                            pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                        }
+                        
+                        // Convert Int16Array to Base64
+                        const uint8 = new Uint8Array(pcm16.buffer);
+                        let binary = '';
+                        // Process in chunks to avoid max call stack size exceeded
+                        const chunkSize = 8192;
+                        for (let i = 0; i < uint8.length; i += chunkSize) {
+                            const chunk = uint8.subarray(i, i + chunkSize);
+                            binary += String.fromCharCode.apply(null, chunk);
+                        }
+                        const base64Audio = btoa(binary);
+                        
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({
+                                type: 'audio_chunk',
+                                data: base64Audio,
+                                language: currentLanguage,
+                                timestamp: Date.now()
+                            }));
+                        }
+                    };
+                    
+                    button.classList.add('recording');
+                    updateStatus('🎤 開始錄音...', 'listening');
+                    isRecording = true;
+                    
+                } catch (err) {
+                    console.error('Failed to get microphone access:', err);
+                    alert('無法存取麥克風，請檢查權限設定');
+                }
+            } else {
+                // Stop recording
+                if (scriptProcessor) {
+                    scriptProcessor.disconnect();
+                    scriptProcessor = null;
+                }
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+                if (audioContext) {
+                    audioContext.close();
+                    audioContext = null;
+                }
+                
+                button.classList.remove('recording');
+                updateStatus('處理中...', 'processing');
+                isRecording = false;
+            }
+        }
+
+        let playAudioContext = null;
+        let nextPlayTime = 0;
+
+        function playAudio(base64Audio) {
+            if (!playAudioContext) {
+                playAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Decode base64 to binary string
+            const binaryString = atob(base64Audio);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            // Raw PCM16 to Float32
+            const int16Array = new Int16Array(bytes.buffer);
+            const float32Array = new Float32Array(int16Array.length);
+            for (let i = 0; i < int16Array.length; i++) {
+                float32Array[i] = int16Array[i] / 32768.0;
+            }
+            
+            // Create AudioBuffer (1 channel, length, 16000 Hz)
+            const audioBuffer = playAudioContext.createBuffer(1, float32Array.length, 16000);
+            audioBuffer.getChannelData(0).set(float32Array);
+            
+            // Play
+            const source = playAudioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(playAudioContext.destination);
+            
+            // Schedule playback to avoid overlapping chunks
+            if (nextPlayTime < playAudioContext.currentTime) {
+                nextPlayTime = playAudioContext.currentTime;
+            }
+            source.start(nextPlayTime);
+            nextPlayTime += audioBuffer.duration;
+        }
+
+        function updateStatus(message, state) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status ' + state;
+        }
+
+        function updateConnectionStatus(connected) {
+            const el = document.getElementById('connectionStatus');
+            if (connected) {
+                el.textContent = '🟢 已連線';
+                el.className = 'connection-status connected';
+            } else {
+                el.textContent = '🔴 未連線';
+                el.className = 'connection-status disconnected';
+            }
+        }
+
+        let currentAssistantMessageDiv = null;
+
+        function addChatMessage(role, text) {
+            const chatHistory = document.getElementById('chatHistory');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${role}`;
+            messageDiv.textContent = text;
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            return messageDiv;
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'create') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('createTab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('listTab').classList.add('active');
+                loadAppointments();
+            }
+        }
+
+        async function createAppointment(event) {
+            event.preventDefault();
+            
+            const data = {
+                patient_name: document.getElementById('patientName').value,
+                birth_date_roc: document.getElementById('birthDate').value,
+                id_number: document.getElementById('idNumber').value,
+                phone: document.getElementById('phone').value,
+                department: document.getElementById('department').value,
+                doctor: document.getElementById('doctor').value,
+                appointment_date: document.getElementById('appointmentDate').value,
+                appointment_time: document.getElementById('appointmentTime').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            try {
+                const response = await fetch('/api/appointments/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 掛號成功！掛號編號：' + result.appointment_id);
+                    document.getElementById('appointmentForm').reset();
+                    switchTab('list');
+                } else {
+                    alert('❌ 掛號失敗：' + result.error);
+                }
+            } catch (err) {
+                console.error('Failed to create appointment:', err);
+                alert('❌ 掛號失敗，請稍後再試');
+            }
+        }
+
+        async function loadAppointments() {
+            try {
+                const response = await fetch('/api/appointments/list');
+                const appointments = await response.json();
+                
+                const listEl = document.getElementById('appointmentList');
+                
+                if (appointments.length === 0) {
+                    listEl.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">尚無掛號記錄</p>';
+                    return;
+                }
+                
+                listEl.innerHTML = appointments.map(apt => `
+                    <div class="appointment-card">
+                        <h4>${apt.patient_name} - ${apt.department}</h4>
+                        <p>📅 日期：${apt.appointment_date} ${apt.appointment_time}</p>
+                        <p>👨‍⚕️ 醫師：${apt.doctor}</p>
+                        <p>📞 電話：${apt.phone}</p>
+                        <p>📝 狀態：${apt.status === 'scheduled' ? '已預約' : apt.status}</p>
+                        ${apt.notes ? `<p>💬 備註：${apt.notes}</p>` : ''}
+                        <div class="actions">
+                            <button class="btn btn-primary" onclick="editAppointment('${apt.appointment_id}')">
+                                ✏️ 更改
+                            </button>
+                            <button class="btn btn-danger" onclick="cancelAppointment('${apt.appointment_id}')">
+                                ❌ 取消
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (err) {
+                console.error('Failed to load appointments:', err);
+            }
+        }
+
+        async function cancelAppointment(appointmentId) {
+            if (!confirm('確定要取消此掛號嗎？')) return;
+            
+            try {
+                const response = await fetch(`/api/appointments/cancel/${appointmentId}`, {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ 已取消掛號');
+                    loadAppointments();
+                } else {
+                    alert('❌ 取消失敗：' + result.error);
+                }
+            } catch (err) {
+                console.error('Failed to cancel appointment:', err);
+                alert('❌ 取消失敗，請稍後再試');
+            }
+        }
+
+        async function editAppointment(appointmentId) {
+            // TODO: Implement edit functionality
+            alert('更改功能開發中...');
+        }
+
+        // Voice button click handler
+        document.getElementById('voiceButton').addEventListener('click', toggleRecording);
+    </script>
+</body>
+</html>

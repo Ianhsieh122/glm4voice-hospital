@@ -1,0 +1,108 @@
+# Opus Hospital - Development Configuration
+
+# GPU Settings (Development - Mixed CPU/GPU)
+gpu:
+  device: "cuda:0"
+  precision: "fp16"
+  batch_size: 8  # Smaller batch for development
+  
+  # Individual device settings for each model (DEVELOPMENT)
+  stt_device: "cuda:0"  # STT on GPU (fast transcription)
+  llm_device: "cpu"     # LLM on CPU (save VRAM for development)
+  tts_device: "cuda:0"  # TTS on GPU (fast synthesis)
+
+# AI Models (Development)
+models:
+  stt: "openai/whisper-large-v3-turbo"
+  llm: "Qwen/Qwen2.5-3B-Instruct"
+  tts: "F5TTS_v1_Base"
+  tts_model_name: "F5TTS_v1_Base"  # or "E2TTS_Base"
+
+# vLLM Settings (Disabled for development on CPU)
+vllm:
+  enabled: false  # Use standard PyTorch for CPU
+  max_model_len: 2048
+  max_num_batched_tokens: 4096
+  max_num_seqs: 32
+  gpu_memory_utilization: 0.80
+  dtype: "half"
+  trust_remote_code: true
+  disable_log_requests: false
+  
+# LLM Generation Settings
+llm_generation:
+  max_tokens: 150
+  temperature: 0.7
+  top_p: 0.9
+  repetition_penalty: 1.1
+  do_sample: true
+  use_beam_search: false
+  enable_chunked_prefill: false
+
+# Audio Processing
+audio:
+  sample_rate: 16000
+  channels: 1
+  format: "pcm16"
+  chunk_size: 4096
+  vad_threshold: 0.5
+  vad_frame_duration: 30
+
+# Server Configuration (Development)
+server:
+  host: "127.0.0.1"  # Local only
+  port: 8000
+  reload: true  # Auto-reload on code changes
+  workers: 1  # Single worker for debugging
+  log_level: "debug"  # Verbose logging
+  max_connections: 10
+  
+  # CORS for local development
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:5173"
+    - "http://127.0.0.1:3000"
+  allowed_hosts:
+    - "localhost"
+    - "127.0.0.1"
+
+# Session Management
+session:
+  max_history_length: 10
+  session_timeout: 1800
+  cleanup_interval: 300
+
+# Database Settings
+database:
+  type: "sqlite"
+  path: "data/patients_dev.db"
+  pool_size: 5
+  
+# Monitoring & Observability (Development)
+monitoring:
+  enable_prometheus: false
+  prometheus_port: 9090
+  enable_health_check: true
+  health_check_interval: 300
+  
+# Rate Limiting (Disabled for development)
+rate_limiting:
+  enabled: false
+  requests_per_minute: 1000
+  burst_size: 100
+
+# Logging (Development)
+logging:
+  level: "DEBUG"
+  format: "text"  # Human-readable for development
+  file: "logs/opus-hospital-dev.log"
+  max_size_mb: 50
+  backup_count: 3
+  
+# Feature Flags (All enabled for testing)
+features:
+  enable_voice_cloning: true
+  enable_emotion_control: true
+  enable_analytics: true
+  enable_model_caching: true
+  enable_debug_mode: true

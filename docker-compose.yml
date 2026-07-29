@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: opus-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/config.yaml:/app/config.yaml
+      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ./backend/logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - HIP_VISIBLE_DEVICES=0
+      - PYTORCH_ROCM_ARCH=gfx942
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: amd.com/gpu
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - opus-network
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: opus-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - opus-network
+
+  # Redis (for session management, optional)
+  redis:
+    image: redis:7-alpine
+    container_name: opus-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - opus-network
+
+networks:
+  opus-network:
+    driver: bridge
+
+volumes:
+  redis-data:

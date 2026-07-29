@@ -1,0 +1,61 @@
+# Backend Dependencies - Updated for NVIDIA + High Concurrency
+
+# Web Framework
+fastapi==0.110.0
+uvicorn[standard]==0.27.1
+websockets==12.0
+python-multipart==0.0.9
+
+# vLLM for 350-400 concurrent users (OPTIONAL - Linux/WSL only)
+# vllm==0.4.2
+# ray[default]==2.10.0  # vLLM dependency
+
+# AI/ML Core (NVIDIA CUDA)
+torch>=2.0.0
+transformers>=4.40.0
+accelerate>=0.28.0
+sentencepiece>=0.2.0
+protobuf>=4.25.0
+
+# Audio Processing
+soundfile>=0.12.1
+librosa>=0.10.1
+webrtcvad>=2.0.10
+numpy>=1.26.0
+scipy>=1.12.0
+
+# Qwen Models
+optimum>=1.18.0
+einops>=0.7.0
+
+# TTS Models (F5-TTS for Taiwanese Hokkien support - optional)
+# f5-tts>=0.1.0
+# cachedpath>=1.3.0
+
+# Async & Concurrency
+aiofiles>=23.2.1
+
+# Data Processing
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+
+# Monitoring & Logging
+loguru>=0.7.0
+prometheus-client>=0.20.0
+
+# Utils
+python-dateutil>=2.9.0
+pytz>=2024.1
+tenacity>=8.2.0
+
+# Development & Security
+pytest>=8.1.0
+pytest-asyncio>=0.23.0
+
+# Hugging Face Hub
+huggingface-hub>=0.22.0
+
+# IMPORTANT: Install PyTorch with CUDA support first:
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121

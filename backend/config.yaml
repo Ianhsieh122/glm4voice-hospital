@@ -1,0 +1,70 @@
+# Opus Hospital - Configuration File (Updated for NVIDIA + Qwen2.5-3B)
+
+# GPU Settings (NVIDIA)
+gpu:
+  device: "cuda:0"  # NVIDIA GPU
+  precision: "fp16"  # FP16 for NVIDIA (or int8 for higher throughput)
+  batch_size: 64  # Continuous batching for 350-400 concurrent users
+  
+  # Individual device settings for each model
+  stt_device: "cuda:0"  # STT on GPU (faster transcription)
+  llm_device: "cpu"     # LLM on CPU (save GPU memory)
+  tts_device: "cuda:0"  # TTS on GPU (faster synthesis)
+
+# AI Models (Lightweight for high concurrency)
+models:
+  stt: "openai/whisper-large-v3-turbo"  # Fast STT
+  llm: "Qwen/Qwen2.5-3B-Instruct"  # 3B model for 400 concurrent users
+  tts: "Qwen/Qwen3-TTS-12Hz-1.7B-Base"  # Streaming TTS
+
+# vLLM Settings (Critical for 350-400 concurrent users)
+vllm:
+  enabled: true  # Use vLLM for continuous batching
+  max_model_len: 2048  # Shorter context for speed
+  max_num_batched_tokens: 8192  # Large batch for throughput
+  max_num_seqs: 256  # Support many concurrent requests
+  gpu_memory_utilization: 0.90  # Use 90% of VRAM
+  dtype: "half"  # FP16
+  trust_remote_code: true
+  disable_log_requests: false
+  
+# LLM Generation Settings (No thinking, fast response)
+llm_generation:
+  max_tokens: 150  # Short responses only
+  temperature: 0.7
+  top_p: 0.9
+  repetition_penalty: 1.1
+  do_sample: true
+  # CRITICAL: Disable any reasoning/thinking features
+  use_beam_search: false
+  enable_chunked_prefill: true  # Better throughput
+
+# Audio Processing
+audio:
+  sample_rate: 16000  # 16kHz
+  channels: 1  # Mono
+  format: "pcm16"  # PCM 16-bit
+  chunk_size: 4096  # Bytes per chunk
+  vad_threshold: 0.5  # Voice activity detection threshold
+  vad_frame_duration: 30  # VAD frame duration in milliseconds
+
+# Server Configuration (Production)
+server:
+  host: "0.0.0.0"
+  port: 8000
+  reload: false
+  workers: 4  # Multiple workers for load balancing
+  log_level: "info"
+  max_connections: 500  # Support 400+ concurrent connections
+
+# Session Management
+session:
+  max_history_length: 10  # Short history for speed
+  session_timeout: 1800  # 30 minutes
+  cleanup_interval: 300  # 5 minutes
+
+# Database Settings
+database:
+  type: "sqlite"  # Simple SQLite for demo
+  path: "data/patients.db"
+  pool_size: 20  # Connection pool for concurrent access
