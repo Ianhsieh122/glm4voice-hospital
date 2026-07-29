@@ -26,7 +26,7 @@ import torch
 
 from models.stt_model import STTModel
 from models.llm_model import LLMModel
-from models.tts_model_f5 import TTSModelF5 as TTSModel
+from models.tts_model_bluemagpie import TTSModelBlueMagpie as TTSModel
 from utils.audio_processor import AudioProcessor
 from utils.vad import VoiceActivityDetector
 from utils.config import load_config
@@ -406,6 +406,7 @@ async def process_utterance(
                         await websocket.send_json({
                             "type": "response_audio",
                             "data": audio_b64,
+                            "sample_rate": getattr(tts_model, "sample_rate", 48000),
                             "timestamp": datetime.now().isoformat()
                         })
                     tts_queue.task_done()

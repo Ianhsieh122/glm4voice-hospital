@@ -580,7 +580,7 @@
                     
                     case 'response_audio':
                         // Play audio response
-                        playAudio(data.data);
+                        playAudio(data.data, data.sample_rate || 16000);
                         break;
                     
                     case 'response_complete':
@@ -687,7 +687,7 @@
         let playAudioContext = null;
         let nextPlayTime = 0;
 
-        function playAudio(base64Audio) {
+        function playAudio(base64Audio, sampleRate = 16000) {
             if (!playAudioContext) {
                 playAudioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
@@ -707,8 +707,8 @@
                 float32Array[i] = int16Array[i] / 32768.0;
             }
             
-            // Create AudioBuffer (1 channel, length, 16000 Hz)
-            const audioBuffer = playAudioContext.createBuffer(1, float32Array.length, 16000);
+            // Create AudioBuffer (1 channel, length, sampleRate Hz)
+            const audioBuffer = playAudioContext.createBuffer(1, float32Array.length, sampleRate);
             audioBuffer.getChannelData(0).set(float32Array);
             
             // Play

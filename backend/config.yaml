@@ -15,7 +15,7 @@ gpu:
 models:
   stt: "openai/whisper-large-v3-turbo"  # Fast STT
   llm: "Qwen/Qwen2.5-3B-Instruct"  # 3B model for 400 concurrent users
-  tts: "Qwen/Qwen3-TTS-12Hz-1.7B-Base"  # Streaming TTS
+  tts: "OpenFormosa/BlueMagpie-TTS"  # BlueMagpie-TTS for Taiwanese Mandarin and code-switching
 
 # vLLM Settings (Critical for 350-400 concurrent users)
 vllm:
