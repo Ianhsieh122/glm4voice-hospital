@@ -14,8 +14,8 @@ gpu:
 # AI Models (Lightweight for high concurrency)
 models:
   stt: "openai/whisper-large-v3-turbo"  # Fast STT
-  llm: "Qwen/Qwen2.5-3B-Instruct"  # 3B model for 400 concurrent users
-  tts: "OpenFormosa/BlueMagpie-TTS"  # BlueMagpie-TTS for Taiwanese Mandarin and code-switching
+  llm: "google/gemma-4-e2b"  # 3B model for 400 concurrent users
+  tts: "FunAudioLLM/Fun-CosyVoice3-0.5B-2512"  # CosyVoice3 for Taiwanese Mandarin
 
 # vLLM Settings (Critical for 350-400 concurrent users)
 vllm:
@@ -30,7 +30,7 @@ vllm:
   
 # LLM Generation Settings (No thinking, fast response)
 llm_generation:
-  max_tokens: 150  # Short responses only
+  max_tokens: 60  # Short responses only
   temperature: 0.7
   top_p: 0.9
   repetition_penalty: 1.1

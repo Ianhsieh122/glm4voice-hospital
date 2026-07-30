@@ -1,0 +1,44 @@
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+ENV/
+
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+
+# Models & Weights
+*.bin
+*.safetensors
+*.pt
+*.pth
+*.onnx
+*.ckpt
+backend/CosyVoice/pretrained_models/
+
+# Logs & Data
+*.log
+logs/
+data/*.db
+!data/.gitkeep
+*.wav
+*.mp3
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

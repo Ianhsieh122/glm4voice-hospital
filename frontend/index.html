@@ -718,7 +718,8 @@
             
             // Schedule playback to avoid overlapping chunks
             if (nextPlayTime < playAudioContext.currentTime) {
-                nextPlayTime = playAudioContext.currentTime;
+                // Add a 300ms jitter buffer when recovering from an underrun
+                nextPlayTime = playAudioContext.currentTime + 0.3;
             }
             source.start(nextPlayTime);
             nextPlayTime += audioBuffer.duration;
